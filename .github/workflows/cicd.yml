@@ -1,12 +1,10 @@
 on:
   push:
-  workflow_dispatch:
 name: deploy
 jobs:
   build-and-push:
     name: build and push image
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
     steps:
     - uses: actions/checkout@master
     - name: build and push to docker
@@ -18,54 +16,14 @@ jobs:
         tag_with_ref: true
         tag_with_sha: true
         tags: ${{ github.sha }}
-  deploy-to-cluster:
-    name: deploy to cluster
+  hello-world:
+    name: Un job para saludar
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    env:
-      KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
-      HOLA: test
-    needs: build-and-push
     steps:
-    - uses: actions/checkout@master
-    - name: deploy to cluster
-      uses: yokawasa/action-setup-kube-tools@v0.4.0
-      with:
-        kubectl: '1.20.2'
-        kustomize: '3.7.0'
-    - name: kubectl
-      id: kubectl
-      run: |
-        mkdir -p ~/.kube/
-        echo $KUBE_CONFIG_DATA | base64 -d > ~/.kube/config
-        cd .kustomize
-        kustomize edit set image prueba-gha=${{ github.repository }}:${{ github.sha }}
-        kustomize build . | kubectl apply -f -
-        kubectl -n prueba rollout status deployment/prueba-gha
-        URL=`kubectl -n prueba get ngrok -o=custom-columns='DATA:status.url' | tail -n1`
-
-        while [[ $URL != *"ngrok"* ]]; do
-          echo "Still not ready" && sleep 5
-          URL=`kubectl -n prueba get ngrok -o=custom-columns='DATA:status.url' | tail -n1`
-        done
-
-        echo "::set-output name=url::$URL"
-    - name: Add Ngrok URL comment to PR
-      uses: unsplash/comment-on-pr@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        msg: "URL for environment is: ${{ steps.kubectl.outputs.url }}"
-  integration_test_log:
-    name: Information about the integration test execution
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
-    env:
-      GITHUB_CONTEXT: ${{ toJson(github) }}
-    steps:
-      - name: Show Information
-        run: |
-          echo "This workflow run is triggered by ${{ github.event_name }} ."
-          echo " *****************************************************************************"
-          echo "$GITHUB_CONTEXT"
-          echo " *****************************************************************************"
+      - name: Step Hola Mundo
+        id: hello
+        uses: pablokbs/hello-world-docker-action@v1
+        with:
+          who-to-greet: "Pelades"
+      - name: Usar el output
+        run: echo "La fecha fue ${{ steps.hello.output.time }}"
