@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Step Hola Mundo
         id: hello
-        uses: pablokbs/hello-world-docker-action@v2
+        uses: pablokbs/hello-world-docker-action@v3
         with:
           who-to-greet: "Pelades"
       - name: Usar el output
