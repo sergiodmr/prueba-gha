@@ -1,28 +1,14 @@
 on:
   push:
-name: deploy
+name: action
 jobs:
-  build-and-push:
-    name: build and push image
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - name: build and push to docker
-      uses: docker/build-push-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        repository: ${{ github.repository }}
-        tag_with_ref: true
-        tag_with_sha: true
-        tags: ${{ github.sha }}
   hello-world:
     name: Un job para saludar
     runs-on: ubuntu-latest
     steps:
       - name: Step Hola Mundo
         id: hello
-        uses: pablokbs/hello-world-docker-action@v4
+        uses: pablokbs/hello-world-docker-action@v1
         with:
           who-to-greet: "Pelades"
       - name: Usar el output
